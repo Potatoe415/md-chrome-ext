@@ -1,0 +1,2 @@
+muchotools cae47bc
+13 scripts: core, i18n, prefs, markdown, files, search, word, mdout, edit, edit-tools, edit-keys, ui, boot

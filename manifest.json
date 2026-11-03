@@ -1,8 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Markdown Viewer",
-  "version": "1.0.0",
-  "description": "Affiche automatiquement les fichiers Markdown (.md) formatés dans Chrome.",
+  "name": "Markdown Reader",
+  "version": "2.0.0",
+  "description": "Ouvre les fichiers Markdown (.md) dans Chrome avec le Markdown Reader de muchotools : sommaire, recherche, édition, export Word.",
+  "permissions": ["scripting"],
+  "host_permissions": ["file:///*", "http://*/*", "https://*/*"],
+  "background": {
+    "service_worker": "src/background.js"
+  },
   "content_scripts": [
     {
       "matches": ["file:///*", "http://*/*", "https://*/*"],
@@ -11,16 +16,17 @@
         "*.MD", "*.MD?*",
         "*.markdown", "*.markdown?*",
         "*.mdown", "*.mdown?*",
-        "*.mkd", "*.mkd?*"
+        "*.mkd", "*.mkd?*",
+        "*.mdx", "*.mdx?*"
       ],
-      "js": [
-        "vendor/marked.umd.js",
-        "vendor/purify.min.js",
-        "vendor/highlight.min.js",
-        "src/content.js"
-      ],
-      "css": ["src/viewer.css"],
+      "js": ["src/content.js"],
       "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["fonts/*.woff2"],
+      "matches": ["file:///*", "http://*/*", "https://*/*"]
     }
   ]
 }

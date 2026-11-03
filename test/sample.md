@@ -5,7 +5,11 @@ tags: [demo, test]
 
 # Titre principal
 
-Paragraphe avec **gras**, *italique*, ~~barré~~, `code inline` et un [lien](#tableau).
+Paragraphe avec **gras**, *italique*, ~~barré~~, `code inline` et un [lien interne](#tableau).
+
+Voir [l'autre fichier](other.md#suite) ou [[other|le wikilink]].
+
+![Logo](logo.svg)
 
 ## Liste de tâches
 
@@ -33,5 +37,6 @@ function hello(name) {
 
 <script>document.title = 'XSS'</script>
 <img src="x" onerror="document.body.dataset.xss = '1'">
+<iframe srcdoc="<script>parent.document.body.dataset.xss = '2'</script>"></iframe>
 
 ## Titre principal
