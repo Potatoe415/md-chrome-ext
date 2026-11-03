@@ -17,7 +17,7 @@ Markdown CoolReader is a Chrome extension that displays Markdown (`.md`) files f
 - **Websites** (`http://*/*`, `https://*/*`), optional and off until you allow them on the extension's page: to format `.md` files that websites send as plain text. Only pages whose address ends in `.md` (or `.markdown`, `.mdown`, `.mkd`, `.mdx`) and whose content is plain text are changed; other pages are left untouched.
 - **Scripting**: to add the reader to those Markdown pages.
 
-Images and links written in a document load from their own address, as in any web page; the extension adds no other request.
+Images and links written in a document load from their own address, as in any web page. When you export to HTML, the document's images are read again to be included in the file: images on your computer through a background tab that closes right away, images on the web from their own address. The extension makes no other request.
 
 ## Contact
 

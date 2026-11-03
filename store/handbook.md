@@ -1,49 +1,65 @@
 ---
-title: Project guide
-tags: [documentation, markdown]
-author: Product team
+title: Team handbook
+tags: [onboarding, engineering, docs]
+owner: Platform team
+updated: 2026-11-03
 ---
 
-# Project guide
+# Team handbook
 
-This file is opened straight in Chrome: it shows **formatted**, with a headings panel on the left, search (`Ctrl+K`), dark mode and Word export.
+Everything a new teammate needs in the first week: how we work, how to set up a laptop, and where to find help. Keep this file **short and current** — if something is wrong, fix it in the same pull request.
 
-## Installation
+## Getting started
 
-1. Clone the repository
-2. Install the dependencies
-3. Start the development server
+1. Request access to the repository and the team calendar
+2. Install the tools listed below
+3. Run the project locally and open your first pull request
 
 ```bash
-git clone https://github.com/example/project.git
+git clone https://github.com/example/handbook.git
+cd handbook
 npm install
 npm run dev
 ```
 
-## Configuration
+## Environment
 
-| Variable      | Default | Purpose               |
-| :------------ | ------: | :-------------------- |
-| `PORT`        |    3000 | Server port           |
-| `CACHE_TTL`   |     600 | Cache lifetime (s)    |
-| `MAX_UPLOADS` |      20 | Files per request     |
+| Variable      | Default | Purpose                         |
+| :------------ | ------: | :------------------------------ |
+| `PORT`        |    3000 | Port of the development server  |
+| `CACHE_TTL`   |     600 | Cache lifetime, in seconds      |
+| `MAX_UPLOADS` |      20 | Files accepted per request      |
+| `LOG_LEVEL`   |  `info` | `debug`, `info`, `warn`, `error` |
 
-## Progress
+## How we work
 
-- [x] Read local files
-- [x] Headings panel and search
-- [ ] Translate the documentation
+We ship small changes often. Every change goes through a pull request with at least one review, and the main branch is always deployable.
 
-> Tip: the pencil button edits the text right on the page, then `Ctrl+S` saves the `.md` file.
+> Prefer a clear question in the team channel over an hour of guessing. Nobody minds.
 
-## Code sample
+### Code review
+
+- Review within one working day
+- Comment on the code, not the person
+- Approve when it is better than before, not when it is perfect
+
+## Example: a feature flag
 
 ```ts
-export function greet(name: string): string {
-  return `Hello ${name}!`;
+export function isEnabled(flag: string, user: User): boolean {
+  const rule = flags[flag];
+  if (!rule) return false;
+  return rule.everyone || rule.users.includes(user.id);
 }
 ```
 
-## Going further
+## First-week checklist
 
-See the release notes and the FAQ for details.
+- [x] Laptop set up and repository cloned
+- [x] Met the team and your onboarding buddy
+- [ ] First pull request merged
+- [ ] On-call shadowing booked
+
+## Where to find help
+
+Ask in **#platform-help**, or book a slot with your onboarding buddy. Architecture notes live in `docs/architecture.md`.
