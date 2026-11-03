@@ -36,7 +36,7 @@ const escapeNonchars = (code) =>
 for (const name of scripts) {
   let code = escapeNonchars(read(`public/markdown-reader/${name}.js`));
   if (name === 'files') {
-    code = patch(code, "{href: '/epub/'", "{href: 'https://muchotools.com/epub/'", 'EPUB Reader link');
+    code = patch(code, ", {href: '/epub/', label: 'EPUB Reader'}", '', 'EPUB Reader link');
   }
   writeFileSync(join(out, `${name}.js`), code);
 }

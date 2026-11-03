@@ -1,16 +1,39 @@
 {
   "manifest_version": 3,
-  "name": "Markdown Reader",
-  "version": "2.0.0",
-  "description": "Ouvre les fichiers Markdown (.md) dans Chrome avec le Markdown Reader de muchotools : sommaire, recherche, édition, export Word.",
+  "name": "__MSG_extName__",
+  "version": "2.1.0",
+  "description": "__MSG_extDescription__",
+  "default_locale": "en",
+  "minimum_chrome_version": "123",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "__MSG_actionTitle__",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "options_ui": {
+    "page": "src/welcome.html",
+    "open_in_tab": true
+  },
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+  },
   "permissions": ["scripting"],
-  "host_permissions": ["file:///*", "http://*/*", "https://*/*"],
+  "host_permissions": ["file:///*"],
+  "optional_host_permissions": ["http://*/*", "https://*/*"],
   "background": {
     "service_worker": "src/background.js"
   },
   "content_scripts": [
     {
-      "matches": ["file:///*", "http://*/*", "https://*/*"],
+      "matches": ["file:///*"],
       "include_globs": [
         "*.md", "*.md?*",
         "*.MD", "*.MD?*",
@@ -25,7 +48,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["fonts/*.woff2"],
+      "resources": ["fonts/*.woff2", "icons/*.png"],
       "matches": ["file:///*", "http://*/*", "https://*/*"]
     }
   ]

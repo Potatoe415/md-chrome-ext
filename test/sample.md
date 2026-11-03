@@ -1,42 +1,42 @@
 ---
-title: Exemple
+title: Example
 tags: [demo, test]
 ---
 
-# Titre principal
+# Main title
 
-Paragraphe avec **gras**, *italique*, ~~barré~~, `code inline` et un [lien interne](#tableau).
+A paragraph with **bold**, *italic*, ~~strikethrough~~, `inline code` and an [internal link](#table).
 
-Voir [l'autre fichier](other.md#suite) ou [[other|le wikilink]].
+See [the other file](other.md#next) or [[other|the wikilink]].
 
 ![Logo](logo.svg)
 
-## Liste de tâches
+## Task list
 
-- [x] Fait
-- [ ] À faire
-  - Sous-élément
+- [x] Done
+- [ ] To do
+  - Sub-item
 
 ## Code
 
 ```js
-// commentaire
+// comment
 function hello(name) {
-  return `Bonjour ${name}`;
+  return `Hello ${name}`;
 }
 ```
 
-## Tableau
+## Table
 
-| Colonne | Valeur |
-| :------ | -----: |
-| a       |      1 |
-| b       |      2 |
+| Column | Value |
+| :----- | ----: |
+| a      |     1 |
+| b      |     2 |
 
-> Citation
+> Quote
 
 <script>document.title = 'XSS'</script>
 <img src="x" onerror="document.body.dataset.xss = '1'">
 <iframe srcdoc="<script>parent.document.body.dataset.xss = '2'</script>"></iframe>
 
-## Titre principal
+## Main title

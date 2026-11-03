@@ -1,13 +1,15 @@
 {
   "name": "md-chrome-ext",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
-  "description": "Extension Chrome qui affiche les fichiers Markdown avec le lecteur Markdown de muchotools",
+  "description": "Chrome extension that opens Markdown files formatted for reading (Markdown CoolReader)",
   "scripts": {
     "vendor": "node scripts/vendor.mjs",
     "postinstall": "node scripts/vendor.mjs",
     "sync-reader": "node scripts/sync-reader.mjs",
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "assets": "node scripts/assets.mjs",
+    "package": "node scripts/package.mjs"
   },
   "license": "MIT",
   "devDependencies": {

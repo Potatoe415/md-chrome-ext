@@ -1,31 +1,27 @@
-// Loads the unpacked extension in Playwright's Chromium and opens Markdown served over http.
+// Loads the unpacked extension in Playwright's Chromium. Most tests open Markdown served over http with
+// website access granted; the last ones use the extension as published (websites not allowed yet).
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { rm } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { after, before, test } from 'node:test';
-import { fileURLToPath } from 'node:url';
-import { chromium } from 'playwright';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { launchExtension, webEnabledCopy } from './extension-copy.mjs';
 import { serve } from './serve.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = 'http://localhost:8765/test';
-let server, context, profile;
+let server, context, close, ext;
 
 before(async () => {
   server = await serve();
-  profile = await mkdtemp(join(tmpdir(), 'mdv-'));
-  context = await chromium.launchPersistentContext(profile, {
-    channel: 'chromium',
-    args: [`--disable-extensions-except=${root}`, `--load-extension=${root}`],
-  });
-  if (!context.serviceWorkers().length) await context.waitForEvent('serviceworker');
+  ext = await webEnabledCopy(root);
+  ({ context, close } = await launchExtension(ext, { locale: 'fr-FR' }));
 });
 
 after(async () => {
-  await context?.close();
+  await close?.();
   server?.close();
-  await rm(profile, { recursive: true, force: true });
+  await rm(ext, { recursive: true, force: true });
 });
 
 async function open(path) {
@@ -40,8 +36,14 @@ async function open(path) {
 test('renders the file with the Markdown Reader', async () => {
   const { page, errors } = await open('sample.md');
   assert.deepEqual(errors, []);
-  assert.equal(await page.locator('#doc h1').first().textContent(), 'Titre principal');
-  assert.match(await page.title(), /Exemple · sample\.md/);
+  assert.equal(await page.locator('#doc h1').first().textContent(), 'Main title');
+  assert.match(await page.title(), /Example · sample\.md/);
+  assert.equal(await page.locator('#homeBtn .nm').textContent(), 'Markdown CoolReader');
+  assert.equal(await page.locator('#appMenu').count(), 0);
+  assert.ok(await page.locator('#homeBtn .mk img').evaluate((img) => img.decode().then(() => img.naturalWidth > 0)));
+  assert.match(await page.locator('link[rel="icon"]').getAttribute('href'), /^chrome-extension:\/\/.+\/icons\/icon-32\.png$/);
+  assert.equal(await page.locator('.mdv-nav-h').textContent(), 'On this page');
+  assert.match(await page.locator('#meta').textContent(), /min read/);
   assert.equal(await page.locator('#doc .fm .pill').count(), 2);
   assert.equal(await page.locator('#doc li.task').count(), 2);
   assert.ok((await page.locator('#doc pre code .hljs-keyword').count()) > 0);
@@ -66,21 +68,21 @@ test('loads images beside the file and links to other files', async () => {
   await assert.doesNotReject(img.evaluate((el) => el.decode()));
   assert.equal(await img.getAttribute('src'), `${BASE}/logo.svg`);
   assert.equal(await page.locator('#doc a.missing').count(), 0);
-  assert.equal(await page.locator('#doc a', { hasText: "l'autre fichier" }).getAttribute('href'), `${BASE}/other.md#suite`);
-  assert.equal(await page.locator('#doc a', { hasText: 'le wikilink' }).getAttribute('href'), `${BASE}/other.md`);
-  await page.locator('#doc a', { hasText: "l'autre fichier" }).click();
-  await page.waitForURL(`${BASE}/other.md#suite`);
+  assert.equal(await page.locator('#doc a', { hasText: 'the other file' }).getAttribute('href'), `${BASE}/other.md#next`);
+  assert.equal(await page.locator('#doc a', { hasText: 'the wikilink' }).getAttribute('href'), `${BASE}/other.md`);
+  await page.locator('#doc a', { hasText: 'the other file' }).click();
+  await page.waitForURL(`${BASE}/other.md#next`);
   await page.waitForSelector('#doc h1');
-  assert.equal(await page.locator('#doc h1').first().textContent(), 'Autre fichier');
-  assert.ok(await page.evaluate(() => scrollY > 0 || document.getElementById('suite').getBoundingClientRect().top < innerHeight));
+  assert.equal(await page.locator('#doc h1').first().textContent(), 'Other file');
+  assert.ok(await page.evaluate(() => scrollY > 0 || document.getElementById('next').getBoundingClientRect().top < innerHeight));
   await page.close();
 });
 
 test('opens on the anchor of the address', async () => {
-  const { page } = await open('sample.md#tableau');
+  const { page } = await open('sample.md#table');
   await page.waitForTimeout(200);
-  assert.ok(page.url().endsWith('#tableau'));
-  const top = await page.locator('#tableau').evaluate((el) => el.getBoundingClientRect().top);
+  assert.ok(page.url().endsWith('#table'));
+  const top = await page.locator('#table').evaluate((el) => el.getBoundingClientRect().top);
   assert.ok(top < 300, `heading at ${top}px`);
   await page.close();
 });
@@ -97,11 +99,11 @@ test('lists every heading in a left panel that folds to a rail', async () => {
   const box = await nav.boundingBox();
   assert.ok(await page.locator('#doc').evaluate((el, r) => el.getBoundingClientRect().left >= r, box.x + box.width));
   assert.deepEqual(await list.locator('a').allTextContents(), [
-    'Titre principal',
-    'Liste de tâches',
+    'Main title',
+    'Task list',
     'Code',
-    'Tableau',
-    'Titre principal',
+    'Table',
+    'Main title',
   ]);
   await page.screenshot({ path: join(root, 'test', 'screenshot-nav.png') });
 
@@ -114,10 +116,10 @@ test('lists every heading in a left panel that folds to a rail', async () => {
   await page.waitForTimeout(300);
   assert.equal(await list.isVisible(), true);
 
-  await list.locator('a', { hasText: 'Tableau' }).click();
+  await list.locator('a', { hasText: 'Table' }).click();
   await page.waitForTimeout(400);
-  assert.ok((await page.locator('#tableau').evaluate((el) => el.getBoundingClientRect().top)) < 300);
-  assert.equal(await list.locator('a.on').textContent(), 'Tableau');
+  assert.ok((await page.locator('#table').evaluate((el) => el.getBoundingClientRect().top)) < 300);
+  assert.equal(await list.locator('a.on').textContent(), 'Table');
 
   await page.locator('#editBtn').click();
   await page.waitForSelector('#ed[contenteditable="true"]');
@@ -156,4 +158,39 @@ test('leaves html pages whose address ends in .md alone', async () => {
   assert.equal(await page.locator('#mrBar').count(), 0);
   assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).visibility), 'visible');
   await page.close();
+});
+
+test('as published: formats local files, leaves websites until allowed', async () => {
+  const published = await launchExtension(root);
+  try {
+    const { context: ctx, worker } = published;
+    const id = new URL(worker.url()).host;
+
+    const local = await ctx.newPage();
+    await local.goto(pathToFileURL(join(root, 'test', 'sample.md')).href);
+    await local.waitForSelector('#doc h1');
+    assert.equal(await local.locator('#doc img[alt="Logo"]').getAttribute('src'), pathToFileURL(join(root, 'test', 'logo.svg')).href);
+
+    const web = await ctx.newPage();
+    await web.goto(`${BASE}/sample.md`);
+    await web.waitForTimeout(500);
+    assert.equal(await web.locator('#mrBar').count(), 0);
+    assert.equal(await web.locator('body > pre').count(), 1);
+
+    const welcome = await ctx.newPage();
+    const problems = [];
+    welcome.on('console', (m) => m.type() === 'error' && problems.push(m.text()));
+    welcome.on('pageerror', (e) => problems.push(e.message));
+    await welcome.goto(`chrome-extension://${id}/src/welcome.html`);
+    await welcome.waitForFunction(() => document.getElementById('webBtn').textContent);
+    assert.equal(await welcome.locator('#fileState').getAttribute('class'), 'wl-pill on');
+    assert.equal(await welcome.locator('#fileHelp').isHidden(), true);
+    assert.equal(await welcome.locator('#webState').getAttribute('class'), 'wl-pill');
+    assert.equal(await welcome.locator('#webBtn').getAttribute('data-on'), 'false');
+    assert.ok(await welcome.locator('.wl-head img').evaluate((img) => img.decode().then(() => img.naturalWidth > 0)));
+    assert.deepEqual(problems, []);
+    await welcome.screenshot({ path: join(root, 'test', 'screenshot-welcome.png'), fullPage: true });
+  } finally {
+    await published.close();
+  }
 });

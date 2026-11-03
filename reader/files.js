@@ -31,7 +31,7 @@ async function ingest(list){
   if (epubs) epubElsewhere();
   else if (keys.length > 1) note(msg('filesLoaded', {n: keys.length}));
 }
-const epubElsewhere = () => note(msg('epubElsewhere'), {href: 'https://muchotools.com/epub/', label: 'EPUB Reader'});
+const epubElsewhere = () => note(msg('epubElsewhere'));
 
 async function fromDrop(dt){
   // Everything must be grabbed synchronously: DataTransfer items expire after the first await.

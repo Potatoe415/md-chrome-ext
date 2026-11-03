@@ -1,0 +1,11 @@
+{
+  "extName": {
+    "message": "Markdown CoolReader"
+  },
+  "extDescription": {
+    "message": "Opens Markdown (.md) files in Chrome formatted for reading: headings panel, search, dark mode, editing, Word export."
+  },
+  "actionTitle": {
+    "message": "Markdown CoolReader: settings and help"
+  }
+}

@@ -1,7 +1,6 @@
 "use strict";
 // Runs last, in the reader's global scope. The reader's top-level functions are global bindings: the ones
 // replaced here keep the upstream behaviour and add what a document opened from its own URL needs.
-
 const MDV_PURIFY = {
   ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|file|mailto|tel|callto|sms|cid|xmpp|matrix):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
 };
@@ -20,7 +19,7 @@ const mdvUrl = (raw) => {
 const mrSanitize = sanitize;
 sanitize = (root) => {
   mrSanitize(root);
-  root.innerHTML = DOMPurify.sanitize(root.innerHTML, MDV_PURIFY);
+  root.replaceChildren(DOMPurify.sanitize(root.innerHTML, { ...MDV_PURIFY, RETURN_DOM_FRAGMENT: true }));
 };
 
 // Images beside the file load from their real address instead of a dropped folder.
@@ -65,15 +64,23 @@ enhance = (root) => {
 // Left panel listing every heading, open on wide screens and folding to a rail. It replaces the reader's
 // own contents (h2 / h3 only, beside the text from 3 headings).
 const mdvNav = (() => {
-  const nav = document.createElement('nav');
-  nav.className = 'mdv-nav';
-  nav.setAttribute('data-ui', '');
-  nav.innerHTML =
-    '<div class="mdv-nav-top"><button type="button" class="mdv-nav-btn" aria-expanded="false" aria-controls="mdvNavList">' +
-    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>' +
-    '</button><span class="mdv-nav-h"></span></div><div class="mdv-nav-list" id="mdvNavList"></div>';
+  const el = (tag, attrs = {}, ns) => {
+    const node = ns ? document.createElementNS(ns, tag) : document.createElement(tag);
+    Object.entries(attrs).forEach(([k, v]) => node.setAttribute(k, v));
+    return node;
+  };
+  const SVG = 'http://www.w3.org/2000/svg';
+  const icon = el('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true' }, SVG);
+  icon.append(el('rect', { x: 3, y: 4, width: 18, height: 16, rx: 2 }, SVG), el('path', { d: 'M9 4v16' }, SVG));
+  const btn = el('button', { type: 'button', class: 'mdv-nav-btn', 'aria-expanded': 'false', 'aria-controls': 'mdvNavList' });
+  btn.append(icon);
+  const title = el('span', { class: 'mdv-nav-h' });
+  const bar = el('div', { class: 'mdv-nav-top' });
+  bar.append(btn, title);
+  const list = el('div', { class: 'mdv-nav-list', id: 'mdvNavList' });
+  const nav = el('nav', { class: 'mdv-nav', 'data-ui': '' });
+  nav.append(bar, list);
   document.body.append(nav);
-  const btn = nav.querySelector('.mdv-nav-btn'), title = nav.querySelector('.mdv-nav-h'), list = nav.querySelector('.mdv-nav-list');
   const narrow = () => matchMedia('(max-width: 1099px)').matches;
   let observer = null, started = false;
 
@@ -164,34 +171,20 @@ goHome = () => {
 };
 $('homeBtn').onclick = goHome;
 
-// ☰ menu: language. Upstream this is src/shared/shell.js, which fires the `app-lang` event boot.js listens to.
+// The extension is in English only: no ☰ language menu, the reader's strings in English.
+$('appMenu').remove();
+$('homeBtn').querySelector('.nm').textContent = 'Markdown CoolReader';
 (() => {
-  const box = $('appMenu'), btn = $('appMenuBtn'), panel = $('appMenuPanel');
-  const setOpen = (open) => {
-    panel.hidden = !open;
-    btn.setAttribute('aria-expanded', String(open));
-  };
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    setOpen(panel.hidden);
-  });
-  document.addEventListener('click', (e) => {
-    if (!box.contains(e.target)) setOpen(false);
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') setOpen(false);
-  });
-  panel.addEventListener('click', (e) => {
-    const b = e.target.closest('button[data-lang]');
-    if (!b) return;
-    setOpen(false);
-    if (b.dataset.lang === lang) return;
-    try {
-      localStorage.setItem('imgpress-lang', b.dataset.lang);
-    } catch {}
-    document.dispatchEvent(new CustomEvent('app-lang', { detail: b.dataset.lang }));
-  });
+  const logo = document.createElement('img');
+  logo.src = chrome.runtime.getURL('icons/icon-48.png');
+  logo.alt = '';
+  $('homeBtn').querySelector('.mk').replaceChildren(logo);
 })();
+I18N.metaTitle.en = 'Markdown CoolReader';
+I18N.epubElsewhere.en = 'EPUB books are not supported: only Markdown and text files open here.';
+lang = 'en';
+applyStatic();
+applyPrefs();
 
 (async () => {
   const { text, name, mtime } = globalThis.MDV_SOURCE;

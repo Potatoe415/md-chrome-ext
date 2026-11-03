@@ -2,3 +2,6 @@ node_modules/
 *.zip
 test/screenshot.png
 test/screenshot-nav.png
+dist/
+test/screenshot-welcome.png
+tmp-nogit/

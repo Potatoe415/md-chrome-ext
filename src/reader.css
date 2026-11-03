@@ -1,3 +1,15 @@
+.brand .mk {
+  background: none;
+  border-radius: 0;
+}
+
+.brand .mk img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 /* Headings panel on the left: a rail while collapsed, pushes the page aside on wide screens when open. */
 :root {
   --mdv-rail: 48px;

@@ -1,7 +1,7 @@
-# Autre fichier
+# Other file
 
-Retour vers [l'exemple](sample.md).
+Back to [the example](sample.md).
 
-## Suite
+## Next
 
-Fin.
+The end.

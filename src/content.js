@@ -6,7 +6,7 @@
   if (!MARKDOWN_TYPES.has(document.contentType)) return;
   if (globalThis.MDV_SOURCE) return;
 
-  // Chrome affiche les fichiers texte sous la forme <body><pre>…</pre></body>.
+  // Chrome shows a text file as <body><pre>…</pre></body>.
   const pre = document.body?.querySelector(':scope > pre');
   if (!pre) return;
 

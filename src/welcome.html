@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Markdown CoolReader</title>
+    <link rel="icon" href="../icons/icon-32.png">
+    <link rel="stylesheet" href="../reader/design.css">
+    <link rel="stylesheet" href="welcome.css">
+  </head>
+  <body>
+    <main class="wl">
+      <header class="wl-head">
+        <img src="../icons/icon-128.png" alt="" width="64" height="64">
+        <div>
+          <h1>Markdown CoolReader</h1>
+          <p>Markdown files open in Chrome formatted for reading.</p>
+        </div>
+      </header>
+
+      <section class="wl-card" data-id="file-access">
+        <div class="wl-row">
+          <h2>Files on your computer</h2>
+          <span class="wl-pill" id="fileState"></span>
+        </div>
+        <p>Chrome only lets an extension read files opened from your computer (file://) once you allow it.</p>
+        <div id="fileHelp" hidden>
+          <ol>
+            <li>Open the details of this extension (button below).</li>
+            <li>Turn on “Allow access to file URLs”.</li>
+          </ol>
+          <button type="button" class="btn" id="openDetails">Open the extension details</button>
+          <p class="wl-note">Chrome restarts the extension when you change this setting, which closes this page.</p>
+        </div>
+      </section>
+
+      <section class="wl-card" data-id="web-access">
+        <div class="wl-row">
+          <h2>Markdown files on websites</h2>
+          <span class="wl-pill" id="webState"></span>
+        </div>
+        <p>Optional: also format .md files that websites send as plain text (for example raw files on GitHub). Chrome asks for access to the sites; only addresses ending in .md are touched.</p>
+        <button type="button" class="btn" id="webBtn"></button>
+      </section>
+
+      <section class="wl-card">
+        <h2>How to use it</h2>
+        <ul>
+          <li>Drag a .md file into Chrome, or press Ctrl+O in Chrome and choose it.</li>
+          <li>The panel on the left lists the headings; Ctrl+K searches the text; Aa sets size, width, font and theme.</li>
+          <li>The pencil edits the text on the page; Ctrl+S saves the .md file.</li>
+          <li>Links to other .md files and the images beside the file work as they are.</li>
+        </ul>
+      </section>
+
+      <footer class="wl-foot">
+        <span>Nothing leaves your computer: no account, no tracking, no server.</span>
+        <a href="https://github.com/Potatoe415/md-chrome-ext/blob/main/PRIVACY.md" target="_blank" rel="noopener">Privacy policy</a>
+      </footer>
+    </main>
+    <script src="welcome.js"></script>
+  </body>
+</html>

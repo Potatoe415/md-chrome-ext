@@ -11,10 +11,14 @@
   const description = document.createElement('meta');
   description.name = 'description';
   description.id = 'doc-description';
-  head.append(viewport, description);
+  const icon = document.createElement('link');
+  icon.rel = 'icon';
+  icon.href = chrome.runtime.getURL('icons/icon-32.png');
+  head.append(viewport, description, icon);
 
   document.body.removeAttribute('style');
-  document.body.innerHTML = MR_PAGE;
+  const page = new DOMParser().parseFromString(MR_PAGE, 'text/html');
+  document.body.replaceChildren(...[...page.body.childNodes].map((node) => document.importNode(node, true)));
 
   const font = new FontFace(
     'DM Sans',

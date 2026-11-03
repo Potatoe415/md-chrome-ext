@@ -1,0 +1,116 @@
+@font-face {
+  font-family: 'DM Sans';
+  src: url('../fonts/dm-sans-latin-wght.woff2') format('woff2');
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+}
+
+.wl {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 20px 64px;
+}
+
+.wl-head {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.wl-head h1 {
+  margin: 0;
+  font-size: var(--fs-h2);
+  line-height: var(--lh-heading);
+  letter-spacing: var(--ls-heading);
+  color: var(--ink);
+}
+
+.wl-head p {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+}
+
+.wl-card {
+  margin-bottom: 16px;
+  padding: 22px 24px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.wl-card h2 {
+  margin: 0;
+  font-size: var(--fs-label);
+  color: var(--ink);
+}
+
+.wl-card p,
+.wl-card ol,
+.wl-card ul {
+  margin: 10px 0 0;
+}
+
+.wl-card ol,
+.wl-card ul {
+  padding-left: 1.3em;
+}
+
+.wl-card li + li {
+  margin-top: 4px;
+}
+
+.wl-card .btn {
+  margin-top: 16px;
+}
+
+.wl-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.wl-pill {
+  flex: none;
+  padding: 3px 10px;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-radius: var(--radius-pill);
+}
+
+.wl-pill.on {
+  color: var(--success);
+  background: var(--success-soft);
+}
+
+.wl-note {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+.wl-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 28px;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+.wl-foot a {
+  color: var(--primary);
+}
