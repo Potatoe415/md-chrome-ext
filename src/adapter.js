@@ -153,6 +153,116 @@ const mdvNav = (() => {
   return { show, hide };
 })();
 
+// HTML export: the document as one self-contained page, the reader's styles, font and images inside.
+(() => {
+  const SVG = 'http://www.w3.org/2000/svg';
+  const icon = (size) => {
+    const svg = document.createElementNS(SVG, 'svg');
+    Object.entries({ width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true' })
+      .forEach(([k, v]) => svg.setAttribute(k, v));
+    ['M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z', 'M14 3v5h5', 'm10 12-2.5 2.5L10 17', 'm14 12 2.5 2.5L14 17'].forEach((d) => {
+      const path = document.createElementNS(SVG, 'path');
+      path.setAttribute('d', d);
+      svg.append(path);
+    });
+    return svg;
+  };
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tbar-b';
+  btn.id = 'htmlBtn';
+  btn.title = 'Save as a web page (.html)';
+  btn.setAttribute('aria-label', 'HTML');
+  btn.append(icon(18));
+  $('wordBtn').after(btn);
+
+  const item = document.createElement('button');
+  item.type = 'button';
+  item.id = 'mmHtml';
+  const label = document.createElement('span');
+  label.textContent = 'Save as HTML';
+  item.append(icon(17), label);
+  $('mmWord').after(item);
+
+  // shown exactly when the Word export is
+  const follow = (el, model) => {
+    const sync = () => { el.hidden = model.hidden; };
+    new MutationObserver(sync).observe(model, { attributes: true, attributeFilter: ['hidden'] });
+    sync();
+  };
+  follow(btn, $('wordBtn'));
+  follow(item, $('mmWord'));
+
+  const dataUrl = (blob) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+
+  let busy = false;
+  async function saveHtml() {
+    if (busy || !cur || edS) return;
+    busy = true;
+    try {
+      note('Saving as HTML…');
+      const { art, title, name } = buildMd(cur);
+      const images = [...art.querySelectorAll('img[src]')];
+      const local = {};
+      await Promise.all(
+        images
+          .map((img) => img.getAttribute('src'))
+          .filter((src) => src.startsWith('blob:'))
+          .map(async (src) => {
+            local[src] = await dataUrl(await (await fetch(src)).blob()).catch(() => null);
+          }),
+      );
+      const res = await chrome.runtime.sendMessage({
+        type: 'mdv:export',
+        images: images.map((img) => img.getAttribute('src')).filter((src) => /^(file|https?):/i.test(src)),
+      });
+      if (!res || res.error) throw new Error(res?.error || 'no answer');
+
+      images.forEach((img) => {
+        const src = img.getAttribute('src');
+        const data = local[src] ?? res.images[src] ?? res.images[img.src];
+        if (data) img.setAttribute('src', data);
+      });
+      art.querySelectorAll('a[data-open]').forEach((a) => {
+        a.setAttribute('href', a.dataset.open + (a.dataset.anchor ? `#${a.dataset.anchor}` : ''));
+      });
+
+      const html = document.documentElement;
+      const attrs = ['data-theme', 'data-rw', 'data-rf']
+        .filter((a) => html.hasAttribute(a))
+        .map((a) => ` ${a}="${esc(html.getAttribute(a))}"`)
+        .join('');
+      const size = html.style.getPropertyValue('--rs').trim();
+      const page =
+        `<!doctype html>\n<html lang="${esc(html.lang || 'en')}"${attrs}${size ? ` style="--rs: ${esc(size)}"` : ''}>\n<head>\n` +
+        '<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+        `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: https: http: file:; style-src 'unsafe-inline'; font-src data:">\n` +
+        `<meta name="generator" content="Markdown CoolReader">\n<title>${esc(title)}</title>\n<style>\n${res.css}\n</style>\n</head>\n` +
+        `<body>\n<main class="wrap">\n${art.outerHTML}\n</main>\n</body>\n</html>\n`;
+      download(new Blob([page], { type: 'text/html;charset=utf-8' }), `${safeName(name.replace(/\.[^.]+$/, ''))}.html`);
+      const missing = images.filter((img) => !img.getAttribute('src').startsWith('data:')).length;
+      note(missing ? `Saved as HTML. ${missing} image(s) could not be included and are linked instead.` : 'Saved as HTML.');
+    } catch (err) {
+      note(`HTML export failed: ${err.message || err}`);
+    } finally {
+      busy = false;
+    }
+  }
+
+  btn.addEventListener('click', saveHtml);
+  item.addEventListener('click', () => {
+    $('moreMenu').hidden = true;
+    saveHtml();
+  });
+})();
+
 const mrShowMd = showMd;
 showMd = (path, anchor) => {
   mrShowMd(path, anchor);

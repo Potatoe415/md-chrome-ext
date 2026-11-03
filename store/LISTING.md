@@ -24,7 +24,7 @@ Open a Markdown (.md) file in Chrome and read it formatted, instead of raw text.
 • Clean tables, task lists, code highlighting, front matter shown neatly
 • Links to other .md files and Obsidian-style [[wikilinks]], images beside the file
 • Edit right on the formatted page, then Ctrl+S saves the .md: what you don't touch stays the same, character for character
-• Word (.docx) export and print / PDF
+• Export to Word (.docx) or to a self-contained web page (.html), print / PDF
 
 Files on your computer: after installing, turn on "Allow access to file URLs" in the extension's details (the extension's welcome page takes you there).
 Files on websites (optional): allow websites from the extension's page to format .md files sent as plain text, such as raw files on GitHub.

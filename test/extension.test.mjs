@@ -1,7 +1,7 @@
 // Loads the unpacked extension in Playwright's Chromium. Most tests open Markdown served over http with
 // website access granted; the last ones use the extension as published (websites not allowed yet).
 import assert from 'node:assert/strict';
-import { rm } from 'node:fs/promises';
+import { readFile, rm } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { after, before, test } from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -170,6 +170,20 @@ test('as published: formats local files, leaves websites until allowed', async (
     await local.goto(pathToFileURL(join(root, 'test', 'sample.md')).href);
     await local.waitForSelector('#doc h1');
     assert.equal(await local.locator('#doc img[alt="Logo"]').getAttribute('src'), pathToFileURL(join(root, 'test', 'logo.svg')).href);
+
+    const pages = ctx.pages().length;
+    assert.equal(await local.locator('#htmlBtn').isVisible(), true);
+    const [download] = await Promise.all([local.waitForEvent('download'), local.locator('#htmlBtn').click()]);
+    assert.equal(download.suggestedFilename(), 'sample.html');
+    const html = await readFile(await download.path(), 'utf8');
+    assert.match(html, /<title>Example<\/title>/);
+    assert.match(html, /<img src="data:image\/svg\+xml;base64,[^"]+" alt="Logo">/);
+    assert.match(html, /font-family:'DM Sans';src:url\(data:font\/woff2;base64,/);
+    assert.match(html, /<article id="doc">[\s\S]*<h2 id="table">Table<\/h2>/);
+    assert.match(html, /hljs-keyword/);
+    assert.doesNotMatch(html, /<script|onerror=|srcdoc/i);
+    await local.waitForTimeout(300);
+    assert.equal(ctx.pages().length, pages);
 
     const web = await ctx.newPage();
     await web.goto(`${BASE}/sample.md`);
