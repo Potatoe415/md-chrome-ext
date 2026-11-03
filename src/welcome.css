@@ -30,7 +30,6 @@ body {
 
 .wl-head img {
   flex: none;
-  filter: drop-shadow(0 3px 8px rgba(20, 19, 19, 0.14));
 }
 
 .wl-head h1 {
