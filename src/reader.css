@@ -1,3 +1,166 @@
+/* Headings panel on the left: a rail while collapsed, pushes the page aside on wide screens when open. */
+:root {
+  --mdv-rail: 48px;
+  --mdv-panel: 288px;
+}
+
+.mdv-nav {
+  display: none;
+}
+
+body.mdv-nav-on {
+  padding-left: var(--mdv-rail);
+  transition: padding-left 0.18s ease;
+}
+
+body.mdv-nav-on .top {
+  margin-left: calc(-1 * var(--mdv-rail));
+  transition: margin-left 0.18s ease;
+}
+
+body.mdv-nav-on .mdv-nav {
+  position: fixed;
+  z-index: 39;
+  top: var(--header-h);
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  width: var(--mdv-rail);
+  overflow: hidden;
+  background: var(--bg);
+  border-right: 1px solid var(--line);
+  transition: width 0.18s ease;
+}
+
+body.mdv-nav-open .mdv-nav {
+  width: var(--mdv-panel);
+}
+
+@media (min-width: 1100px) {
+  body.mdv-nav-on.mdv-nav-open {
+    padding-left: var(--mdv-panel);
+  }
+
+  body.mdv-nav-on.mdv-nav-open .top {
+    margin-left: calc(-1 * var(--mdv-panel));
+  }
+}
+
+@media (max-width: 1099px) {
+  body.mdv-nav-open .mdv-nav {
+    box-shadow: var(--shadow-pop);
+  }
+}
+
+.mdv-nav-top {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px 10px;
+}
+
+.mdv-nav-btn {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--text);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.mdv-nav-btn:hover,
+body.mdv-nav-open .mdv-nav-btn {
+  color: var(--primary);
+  background: var(--surface);
+}
+
+.mdv-nav-h {
+  font: 600 11px/1 var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.mdv-nav-h,
+.mdv-nav-list {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.12s, visibility 0.12s;
+}
+
+body.mdv-nav-open .mdv-nav-h,
+body.mdv-nav-open .mdv-nav-list {
+  visibility: visible;
+  opacity: 1;
+}
+
+.mdv-nav-list {
+  flex: 1;
+  width: var(--mdv-panel);
+  box-sizing: border-box;
+  padding: 0 12px 24px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.mdv-nav-list a {
+  display: block;
+  padding: 5px 10px 5px calc(10px + var(--lvl, 0) * 12px);
+  overflow: hidden;
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: var(--text);
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-left: 2px solid var(--line);
+}
+
+.mdv-nav-list a:hover {
+  color: var(--ink);
+  border-color: var(--surface-strong);
+}
+
+.mdv-nav-list a.on {
+  font-weight: 600;
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+body.editing .mdv-nav {
+  display: none;
+}
+
+body.mdv-nav-on.editing {
+  padding-left: 0;
+}
+
+body.mdv-nav-on.editing .top {
+  margin-left: 0;
+}
+
+@media print {
+  .mdv-nav {
+    display: none !important;
+  }
+
+  body.mdv-nav-on {
+    padding-left: 0 !important;
+  }
+
+  body.mdv-nav-on .top {
+    margin-left: 0 !important;
+  }
+}
+
 /* Syntax highlighting (highlight.js classes), in the reader's light / dark scheme. */
 :root {
   --hl-keyword: light-dark(#cf222e, #ff7b72);

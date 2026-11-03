@@ -43,7 +43,6 @@ test('renders the file with the Markdown Reader', async () => {
   assert.equal(await page.locator('#doc h1').first().textContent(), 'Titre principal');
   assert.match(await page.title(), /Exemple · sample\.md/);
   assert.equal(await page.locator('#doc .fm .pill').count(), 2);
-  assert.ok((await page.locator('nav.toc a').count()) >= 3);
   assert.equal(await page.locator('#doc li.task').count(), 2);
   assert.ok((await page.locator('#doc pre code .hljs-keyword').count()) > 0);
   assert.equal(await page.locator('#home').isHidden(), true);
@@ -83,6 +82,60 @@ test('opens on the anchor of the address', async () => {
   assert.ok(page.url().endsWith('#tableau'));
   const top = await page.locator('#tableau').evaluate((el) => el.getBoundingClientRect().top);
   assert.ok(top < 300, `heading at ${top}px`);
+  await page.close();
+});
+
+test('lists every heading in a left panel that folds to a rail', async () => {
+  const { page } = await open('sample.md');
+  const nav = page.locator('.mdv-nav');
+  const list = nav.locator('.mdv-nav-list');
+  const btn = nav.locator('.mdv-nav-btn');
+  assert.equal(await page.locator('nav.toc').count(), 0);
+  assert.equal(await list.isVisible(), true);
+  assert.equal(await btn.getAttribute('aria-expanded'), 'true');
+  assert.ok((await nav.boundingBox()).width > 250);
+  const box = await nav.boundingBox();
+  assert.ok(await page.locator('#doc').evaluate((el, r) => el.getBoundingClientRect().left >= r, box.x + box.width));
+  assert.deepEqual(await list.locator('a').allTextContents(), [
+    'Titre principal',
+    'Liste de tâches',
+    'Code',
+    'Tableau',
+    'Titre principal',
+  ]);
+  await page.screenshot({ path: join(root, 'test', 'screenshot-nav.png') });
+
+  await btn.click();
+  await page.waitForTimeout(300);
+  assert.equal(await list.isVisible(), false);
+  assert.equal(await btn.getAttribute('aria-expanded'), 'false');
+  assert.ok((await nav.boundingBox()).width < 60);
+  await btn.click();
+  await page.waitForTimeout(300);
+  assert.equal(await list.isVisible(), true);
+
+  await list.locator('a', { hasText: 'Tableau' }).click();
+  await page.waitForTimeout(400);
+  assert.ok((await page.locator('#tableau').evaluate((el) => el.getBoundingClientRect().top)) < 300);
+  assert.equal(await list.locator('a.on').textContent(), 'Tableau');
+
+  await page.locator('#editBtn').click();
+  await page.waitForSelector('#ed[contenteditable="true"]');
+  assert.equal(await nav.isVisible(), false);
+  await page.locator('#edDone').click();
+  await page.waitForSelector('#doc h1');
+  assert.equal(await nav.isVisible(), true);
+  await page.close();
+});
+
+test('keeps the panel folded on narrow screens', async () => {
+  const page = await context.newPage();
+  await page.setViewportSize({ width: 800, height: 900 });
+  await page.goto(`${BASE}/sample.md`);
+  await page.waitForSelector('#doc h1');
+  const nav = page.locator('.mdv-nav');
+  assert.equal(await nav.locator('.mdv-nav-list').isVisible(), false);
+  assert.ok((await nav.boundingBox()).width < 60);
   await page.close();
 });
 

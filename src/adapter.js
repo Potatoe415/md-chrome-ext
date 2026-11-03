@@ -62,6 +62,108 @@ enhance = (root) => {
   });
 };
 
+// Left panel listing every heading, open on wide screens and folding to a rail. It replaces the reader's
+// own contents (h2 / h3 only, beside the text from 3 headings).
+const mdvNav = (() => {
+  const nav = document.createElement('nav');
+  nav.className = 'mdv-nav';
+  nav.setAttribute('data-ui', '');
+  nav.innerHTML =
+    '<div class="mdv-nav-top"><button type="button" class="mdv-nav-btn" aria-expanded="false" aria-controls="mdvNavList">' +
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>' +
+    '</button><span class="mdv-nav-h"></span></div><div class="mdv-nav-list" id="mdvNavList"></div>';
+  document.body.append(nav);
+  const btn = nav.querySelector('.mdv-nav-btn'), title = nav.querySelector('.mdv-nav-h'), list = nav.querySelector('.mdv-nav-list');
+  const narrow = () => matchMedia('(max-width: 1099px)').matches;
+  let observer = null, started = false;
+
+  const setOpen = (open) => {
+    document.body.classList.toggle('mdv-nav-open', open);
+    btn.setAttribute('aria-expanded', String(open));
+  };
+  const mark = (a) => {
+    if (!a) return;
+    list.querySelectorAll('a.on').forEach((x) => x.classList.remove('on'));
+    a.classList.add('on');
+    const lr = list.getBoundingClientRect(), ar = a.getBoundingClientRect();
+    if (lr.height && (ar.top < lr.top || ar.bottom > lr.bottom)) list.scrollTop += ar.top - lr.top - lr.height / 3;
+  };
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setOpen(!document.body.classList.contains('mdv-nav-open'));
+  });
+  list.addEventListener('click', (e) => {
+    if (narrow() && e.target.closest('a')) setOpen(false);
+  });
+  document.addEventListener('click', (e) => {
+    if (narrow() && !nav.contains(e.target)) setOpen(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && narrow()) setOpen(false);
+  });
+
+  function show(art) {
+    observer?.disconnect();
+    observer = null;
+    btn.title = msg('contents');
+    btn.setAttribute('aria-label', msg('contents'));
+    title.textContent = msg('onThisPage');
+    const heads = [...art.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]')].filter((h) => h.textContent.trim());
+    const top = Math.min(...heads.map((h) => +h.tagName[1]));
+    const links = new Map();
+    list.replaceChildren(
+      ...heads.map((h) => {
+        const a = document.createElement('a');
+        a.href = `#${h.id}`;
+        a.textContent = h.textContent.trim();
+        a.title = a.textContent;
+        a.style.setProperty('--lvl', +h.tagName[1] - top);
+        links.set(h.id, a);
+        return a;
+      }),
+    );
+    document.body.classList.toggle('mdv-nav-on', heads.length > 0);
+    if (!started) {
+      started = true;
+      setOpen(!narrow());
+    }
+    mark(list.firstElementChild);
+    if (!heads.length) return;
+    observer = new IntersectionObserver(
+      (entries) => entries.forEach((en) => en.isIntersecting && mark(links.get(en.target.id))),
+      { rootMargin: '-80px 0px -70% 0px' },
+    );
+    heads.forEach((h) => observer.observe(h));
+  }
+
+  function hide() {
+    observer?.disconnect();
+    observer = null;
+    document.body.classList.remove('mdv-nav-on');
+  }
+
+  return { show, hide };
+})();
+
+const mrShowMd = showMd;
+showMd = (path, anchor) => {
+  mrShowMd(path, anchor);
+  spy?.disconnect();
+  spy = null;
+  $('toc')?.remove();
+  $('wrap').classList.remove('has-toc');
+  document.body.classList.remove('has-toc');
+  mdvNav.show($('doc'));
+};
+
+const mrGoHome = goHome;
+goHome = () => {
+  mrGoHome();
+  mdvNav.hide();
+};
+$('homeBtn').onclick = goHome;
+
 // ☰ menu: language. Upstream this is src/shared/shell.js, which fires the `app-lang` event boot.js listens to.
 (() => {
   const box = $('appMenu'), btn = $('appMenuBtn'), panel = $('appMenuPanel');
