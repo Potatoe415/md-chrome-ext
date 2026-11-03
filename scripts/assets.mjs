@@ -1,6 +1,6 @@
 // Renders icons/ from assets/logo.png (made by scripts/logo.mjs), and the Chrome Web Store images into store/
 // (a screenshot of store/demo.md opened with the extension, and the small promo tile).
-import { mkdir, readFile, rm } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
@@ -13,18 +13,59 @@ const iconUrl = `data:image/png;base64,${(await readFile(join(root, 'assets/logo
 await mkdir(join(root, 'icons'), { recursive: true });
 await mkdir(join(root, 'store'), { recursive: true });
 
+// name → [canvas size, artwork size, outline]. The Web Store icon is 96 × 96 artwork with 16 px of
+// transparent padding on each side; the others fill their square. Toolbar icons get a hairline so the
+// white card keeps its full size on a light toolbar.
+const ICONS = {
+  'icon-16': [16, 16, true],
+  'icon-32': [32, 32, true],
+  'icon-48': [48, 48, true],
+  'icon-128': [128, 96, false],
+  'logo-32': [32, 32, false],
+  'logo-64': [64, 64, false],
+  'logo-128': [128, 128, false],
+};
+const CORNER = 136 / 762; // corner radius / card size, from scripts/logo.mjs
+
 const browser = await chromium.launch();
-for (const size of [16, 32, 48, 128]) {
-  const page = await browser.newPage({ viewport: { width: size, height: size } });
-  // Web Store icon: 96 × 96 artwork with 16 px of transparent padding on each side.
-  const art = size === 128 ? 96 : size;
-  await page.setContent(
-    `<style>html,body{margin:0}body{display:grid;place-items:center;height:100vh}</style><img src="${iconUrl}" width="${art}" height="${art}">`,
-  );
-  await page.locator('img').evaluate((img) => img.decode());
-  await page.screenshot({ path: join(root, `icons/icon-${size}.png`), omitBackground: true });
-  await page.close();
-  console.log(`icons/icon-${size}.png`);
+const helper = await browser.newPage();
+const rendered = await helper.evaluate(
+  async ({ src, icons, corner }) => {
+    const img = new Image();
+    img.src = src;
+    await img.decode();
+    // Halve with smoothing until close to the target, then one high-quality resize: a single big step blurs.
+    const resize = async (target) => {
+      let bitmap = await createImageBitmap(img);
+      while (bitmap.width / 2 >= target * 2) {
+        const half = Math.round(bitmap.width / 2);
+        bitmap = await createImageBitmap(bitmap, { resizeWidth: half, resizeHeight: half, resizeQuality: 'high' });
+      }
+      return createImageBitmap(bitmap, { resizeWidth: target, resizeHeight: target, resizeQuality: 'high' });
+    };
+    const out = {};
+    for (const [name, [size, art, outline]] of Object.entries(icons)) {
+      const canvas = new OffscreenCanvas(size, size);
+      const ctx = canvas.getContext('2d');
+      const off = (size - art) / 2;
+      ctx.drawImage(await resize(art), off, off);
+      if (outline) {
+        ctx.strokeStyle = 'rgba(32, 33, 36, 0.22)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(off + 0.5, off + 0.5, art - 1, art - 1, art * corner);
+        ctx.stroke();
+      }
+      const bytes = new Uint8Array(await (await canvas.convertToBlob({ type: 'image/png' })).arrayBuffer());
+      out[name] = btoa(String.fromCharCode(...bytes));
+    }
+    return out;
+  },
+  { src: iconUrl, icons: ICONS, corner: CORNER },
+);
+for (const [name, b64] of Object.entries(rendered)) {
+  await writeFile(join(root, `icons/${name}.png`), Buffer.from(b64, 'base64'));
+  console.log(`icons/${name}.png`);
 }
 
 const tile = await browser.newPage({ viewport: { width: 440, height: 280 } });
@@ -37,7 +78,8 @@ await tile.setContent(`
     h1 { margin: 0; font-size: 34px; line-height: 1.05; letter-spacing: -0.03em; }
     p { margin: 10px 0 0; font-size: 16px; color: #63605d; }
   </style>
-  <img src="${iconUrl}" width="104" height="104">
+  <img src="data:image/png;base64,${rendered['logo-128']}" width="112" height="112"
+       style="filter: drop-shadow(0 6px 14px rgba(20, 19, 19, 0.12))">
   <div><h1>Markdown<br>CoolReader</h1><p>Read .md files in Chrome</p></div>`);
 await tile.evaluate(() => Promise.all([document.fonts.ready, document.querySelector('img').decode()]));
 await tile.screenshot({ path: join(root, 'store/promo-440x280.png') });

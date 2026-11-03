@@ -176,7 +176,8 @@ $('appMenu').remove();
 $('homeBtn').querySelector('.nm').textContent = 'Markdown CoolReader';
 (() => {
   const logo = document.createElement('img');
-  logo.src = chrome.runtime.getURL('icons/icon-48.png');
+  logo.src = chrome.runtime.getURL('icons/logo-32.png');
+  logo.srcset = `${logo.src} 1x, ${chrome.runtime.getURL('icons/logo-64.png')} 2x, ${chrome.runtime.getURL('icons/logo-128.png')} 4x`;
   logo.alt = '';
   $('homeBtn').querySelector('.mk').replaceChildren(logo);
 })();
