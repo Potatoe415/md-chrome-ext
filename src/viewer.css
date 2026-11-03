@@ -1,0 +1,435 @@
+html.mdv {
+  color-scheme: light dark;
+  --mdv-bg: #ffffff;
+  --mdv-fg: #1f2328;
+  --mdv-muted: #59636e;
+  --mdv-border: #d1d9e0;
+  --mdv-border-muted: #d1d9e0b3;
+  --mdv-link: #0969da;
+  --mdv-code-bg: #f6f8fa;
+  --mdv-inline-code-bg: #818b981f;
+  --mdv-table-alt: #f6f8fa;
+  --mdv-btn-bg: #f6f8fa;
+  --mdv-btn-hover: #eff2f5;
+
+  --hl-keyword: #cf222e;
+  --hl-string: #0a3069;
+  --hl-comment: #59636e;
+  --hl-number: #0550ae;
+  --hl-title: #8250df;
+  --hl-type: #953800;
+  --hl-tag: #116329;
+  --hl-attr: #0550ae;
+  --hl-add-fg: #116329;
+  --hl-add-bg: #dafbe1;
+  --hl-del-fg: #82071e;
+  --hl-del-bg: #ffebe9;
+
+  background: var(--mdv-bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  html.mdv {
+    --mdv-bg: #0d1117;
+    --mdv-fg: #f0f6fc;
+    --mdv-muted: #9198a1;
+    --mdv-border: #3d444d;
+    --mdv-border-muted: #3d444db3;
+    --mdv-link: #4493f8;
+    --mdv-code-bg: #151b23;
+    --mdv-inline-code-bg: #656c7633;
+    --mdv-table-alt: #151b23;
+    --mdv-btn-bg: #212830;
+    --mdv-btn-hover: #262c36;
+
+    --hl-keyword: #ff7b72;
+    --hl-string: #a5d6ff;
+    --hl-comment: #9198a1;
+    --hl-number: #79c0ff;
+    --hl-title: #d2a8ff;
+    --hl-type: #ffa657;
+    --hl-tag: #7ee787;
+    --hl-attr: #79c0ff;
+    --hl-add-fg: #aff5b4;
+    --hl-add-bg: #033a16;
+    --hl-del-fg: #ffdcd7;
+    --hl-del-bg: #67060c;
+  }
+}
+
+html.mdv body {
+  margin: 0;
+  padding: 32px 16px 64px;
+  background: var(--mdv-bg);
+  color: var(--mdv-fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+html.mdv [hidden] {
+  display: none !important;
+}
+
+/* Barre d'outils */
+
+html.mdv .mdv-toolbar {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+}
+
+html.mdv .mdv-toolbar button,
+html.mdv .mdv-copy {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 6px 10px;
+  color: var(--mdv-fg);
+  background: var(--mdv-btn-bg);
+  border: 1px solid var(--mdv-border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+html.mdv .mdv-toolbar button:hover,
+html.mdv .mdv-copy:hover {
+  background: var(--mdv-btn-hover);
+}
+
+/* Vue source */
+
+html.mdv .mdv-raw {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 16px;
+  font: 13px/1.5 ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  white-space: pre-wrap;
+  background: var(--mdv-code-bg);
+  border: 1px solid var(--mdv-border);
+  border-radius: 6px;
+}
+
+/* Contenu */
+
+html.mdv .markdown-body {
+  box-sizing: border-box;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
+  border: 1px solid var(--mdv-border);
+  border-radius: 6px;
+}
+
+@media (max-width: 767px) {
+  html.mdv .markdown-body {
+    padding: 16px;
+    border: 0;
+  }
+}
+
+html.mdv .markdown-body > :first-child {
+  margin-top: 0 !important;
+}
+
+html.mdv .markdown-body > :last-child {
+  margin-bottom: 0 !important;
+}
+
+html.mdv .markdown-body a {
+  color: var(--mdv-link);
+  text-decoration: none;
+}
+
+html.mdv .markdown-body a:hover {
+  text-decoration: underline;
+}
+
+html.mdv .markdown-body p,
+html.mdv .markdown-body blockquote,
+html.mdv .markdown-body ul,
+html.mdv .markdown-body ol,
+html.mdv .markdown-body dl,
+html.mdv .markdown-body table,
+html.mdv .markdown-body pre,
+html.mdv .markdown-body details {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+html.mdv .markdown-body h1,
+html.mdv .markdown-body h2,
+html.mdv .markdown-body h3,
+html.mdv .markdown-body h4,
+html.mdv .markdown-body h5,
+html.mdv .markdown-body h6 {
+  position: relative;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+html.mdv .markdown-body h1 { font-size: 2em; padding-bottom: .3em; border-bottom: 1px solid var(--mdv-border-muted); }
+html.mdv .markdown-body h2 { font-size: 1.5em; padding-bottom: .3em; border-bottom: 1px solid var(--mdv-border-muted); }
+html.mdv .markdown-body h3 { font-size: 1.25em; }
+html.mdv .markdown-body h4 { font-size: 1em; }
+html.mdv .markdown-body h5 { font-size: .875em; }
+html.mdv .markdown-body h6 { font-size: .85em; color: var(--mdv-muted); }
+
+html.mdv .mdv-anchor {
+  position: absolute;
+  left: -1em;
+  padding-right: .25em;
+  color: var(--mdv-muted) !important;
+  font-weight: 400;
+  text-decoration: none !important;
+  opacity: 0;
+}
+
+html.mdv .markdown-body :is(h1, h2, h3, h4, h5, h6):hover .mdv-anchor {
+  opacity: 1;
+}
+
+html.mdv .markdown-body hr {
+  height: .25em;
+  margin: 24px 0;
+  padding: 0;
+  background: var(--mdv-border);
+  border: 0;
+}
+
+html.mdv .markdown-body blockquote {
+  margin-left: 0;
+  margin-right: 0;
+  padding: 0 1em;
+  color: var(--mdv-muted);
+  border-left: .25em solid var(--mdv-border);
+}
+
+html.mdv .markdown-body ul,
+html.mdv .markdown-body ol {
+  padding-left: 2em;
+}
+
+html.mdv .markdown-body li + li {
+  margin-top: .25em;
+}
+
+html.mdv .markdown-body li > p {
+  margin-top: 16px;
+}
+
+html.mdv .markdown-body ul ul,
+html.mdv .markdown-body ul ol,
+html.mdv .markdown-body ol ol,
+html.mdv .markdown-body ol ul {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+html.mdv .markdown-body li:has(> input[type="checkbox"]) {
+  list-style: none;
+}
+
+html.mdv .markdown-body li > input[type="checkbox"] {
+  margin: 0 .3em .25em -1.4em;
+  vertical-align: middle;
+}
+
+html.mdv .markdown-body img {
+  max-width: 100%;
+  box-sizing: content-box;
+}
+
+html.mdv .markdown-body table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow: auto;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+html.mdv .markdown-body th,
+html.mdv .markdown-body td {
+  padding: 6px 13px;
+  border: 1px solid var(--mdv-border);
+}
+
+html.mdv .markdown-body th {
+  font-weight: 600;
+}
+
+html.mdv .markdown-body tr:nth-child(2n) {
+  background: var(--mdv-table-alt);
+}
+
+html.mdv .markdown-body code,
+html.mdv .markdown-body kbd,
+html.mdv .markdown-body pre {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+html.mdv .markdown-body code {
+  padding: .2em .4em;
+  font-size: 85%;
+  background: var(--mdv-inline-code-bg);
+  border-radius: 6px;
+}
+
+html.mdv .markdown-body pre {
+  position: relative;
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+  background: var(--mdv-code-bg);
+  border-radius: 6px;
+}
+
+html.mdv .markdown-body pre code {
+  padding: 0;
+  font-size: 100%;
+  background: transparent;
+  border-radius: 0;
+  white-space: pre;
+}
+
+html.mdv .mdv-copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0;
+  transition: opacity .15s;
+}
+
+html.mdv .markdown-body pre:hover .mdv-copy,
+html.mdv .mdv-copy:focus-visible {
+  opacity: 1;
+}
+
+html.mdv .markdown-body kbd {
+  display: inline-block;
+  padding: 3px 5px;
+  font-size: 11px;
+  line-height: 10px;
+  vertical-align: middle;
+  background: var(--mdv-code-bg);
+  border: 1px solid var(--mdv-border);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+}
+
+html.mdv .mdv-frontmatter summary {
+  cursor: pointer;
+  color: var(--mdv-muted);
+  font-size: .875em;
+  margin-bottom: 8px;
+}
+
+/* Coloration syntaxique (classes highlight.js) */
+
+html.mdv .hljs-keyword,
+html.mdv .hljs-doctag,
+html.mdv .hljs-meta .hljs-keyword,
+html.mdv .hljs-template-tag,
+html.mdv .hljs-template-variable,
+html.mdv .hljs-type.hljs-keyword,
+html.mdv .hljs-variable.language_ {
+  color: var(--hl-keyword);
+}
+
+html.mdv .hljs-title,
+html.mdv .hljs-title.class_,
+html.mdv .hljs-title.function_ {
+  color: var(--hl-title);
+}
+
+html.mdv .hljs-attr,
+html.mdv .hljs-attribute,
+html.mdv .hljs-literal,
+html.mdv .hljs-meta,
+html.mdv .hljs-number,
+html.mdv .hljs-operator,
+html.mdv .hljs-variable,
+html.mdv .hljs-selector-attr,
+html.mdv .hljs-selector-class,
+html.mdv .hljs-selector-id {
+  color: var(--hl-attr);
+}
+
+html.mdv .hljs-string,
+html.mdv .hljs-regexp,
+html.mdv .hljs-meta .hljs-string {
+  color: var(--hl-string);
+}
+
+html.mdv .hljs-built_in,
+html.mdv .hljs-symbol,
+html.mdv .hljs-type,
+html.mdv .hljs-params {
+  color: var(--hl-type);
+}
+
+html.mdv .hljs-comment,
+html.mdv .hljs-code,
+html.mdv .hljs-formula {
+  color: var(--hl-comment);
+}
+
+html.mdv .hljs-name,
+html.mdv .hljs-quote,
+html.mdv .hljs-selector-tag,
+html.mdv .hljs-selector-pseudo {
+  color: var(--hl-tag);
+}
+
+html.mdv .hljs-section {
+  color: var(--hl-number);
+  font-weight: 700;
+}
+
+html.mdv .hljs-bullet {
+  color: var(--hl-type);
+}
+
+html.mdv .hljs-emphasis {
+  font-style: italic;
+}
+
+html.mdv .hljs-strong {
+  font-weight: 700;
+}
+
+html.mdv .hljs-addition {
+  color: var(--hl-add-fg);
+  background: var(--hl-add-bg);
+}
+
+html.mdv .hljs-deletion {
+  color: var(--hl-del-fg);
+  background: var(--hl-del-bg);
+}
+
+@media print {
+  html.mdv body {
+    padding: 0;
+  }
+
+  html.mdv .mdv-toolbar,
+  html.mdv .mdv-copy {
+    display: none;
+  }
+
+  html.mdv .markdown-body {
+    max-width: none;
+    padding: 0;
+    border: 0;
+  }
+}

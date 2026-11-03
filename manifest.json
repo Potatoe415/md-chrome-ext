@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Markdown Viewer",
+  "version": "1.0.0",
+  "description": "Affiche automatiquement les fichiers Markdown (.md) formatés dans Chrome.",
+  "content_scripts": [
+    {
+      "matches": ["file:///*", "http://*/*", "https://*/*"],
+      "include_globs": [
+        "*.md", "*.md?*",
+        "*.MD", "*.MD?*",
+        "*.markdown", "*.markdown?*",
+        "*.mdown", "*.mdown?*",
+        "*.mkd", "*.mkd?*"
+      ],
+      "js": [
+        "vendor/marked.umd.js",
+        "vendor/purify.min.js",
+        "vendor/highlight.min.js",
+        "src/content.js"
+      ],
+      "css": ["src/viewer.css"],
+      "run_at": "document_end"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "md-chrome-ext",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Extension Chrome qui affiche les fichiers Markdown formatés",
+  "scripts": {
+    "vendor": "node scripts/vendor.mjs",
+    "postinstall": "node scripts/vendor.mjs"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@highlightjs/cdn-assets": "^11.12.0",
+    "dompurify": "^3.4.17",
+    "marked": "^18.1.3"
+  }
+}
