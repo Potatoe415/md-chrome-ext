@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "__MSG_extDescription__",
   "default_locale": "en",
   "minimum_chrome_version": "123",
@@ -23,7 +23,7 @@
     "open_in_tab": true
   },
   "content_security_policy": {
-    "extension_pages": "default-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    "extension_pages": "default-src 'self'; img-src 'self' blob: data: https: http:; connect-src 'self' blob: data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
   },
   "permissions": ["scripting"],
   "host_permissions": ["file:///*"],

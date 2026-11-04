@@ -1,17 +1,8 @@
-importScripts('/reader/scripts.js');
+importScripts('/reader/scripts.js', '/src/files.js');
 
-const CSS = ['reader/design.css', 'reader/page.css', 'src/reader.css'];
-
-// Classic scripts sharing one global scope, in this order (see src/adapter.js).
-const JS = [
-  'vendor/purify.min.js',
-  'vendor/highlight.min.js',
-  'reader/marked.umd.js',
-  'reader/page-html.js',
-  'src/mount.js',
-  ...self.READER_SCRIPTS.map((name) => `reader/${name}.js`),
-  'src/adapter.js',
-];
+const CSS = self.MDV_CSS;
+const JS = self.MDV_JS;
+const READER_PAGE = chrome.runtime.getURL('src/reader.html');
 
 // Web pages are optional: their content script is registered only while the user grants the sites.
 // Registered scripts take match patterns only (no include_globs), so the extensions go in the path.
@@ -43,7 +34,7 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
 chrome.runtime.onStartup.addListener(syncWebScript);
 chrome.permissions.onAdded.addListener(syncWebScript);
 chrome.permissions.onRemoved.addListener(syncWebScript);
-chrome.action.onClicked.addListener(() => chrome.runtime.openOptionsPage());
+chrome.action.onClicked.addListener(() => chrome.tabs.create({ url: READER_PAGE }));
 
 const MARKDOWN_URL = /^(file|https?):\/\/[^?#]*\.(md|markdown|mdown|mkd|mdx)([?#]|$)/i;
 
@@ -162,10 +153,12 @@ async function exportAssets(urls, fromFile) {
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (sender.id !== chrome.runtime.id || sender.tab?.id === undefined || !MARKDOWN_URL.test(sender.url ?? '')) return;
+  const url = sender.url ?? '';
+  if (sender.id !== chrome.runtime.id || sender.tab?.id === undefined) return;
+  if (!MARKDOWN_URL.test(url) && !url.startsWith(READER_PAGE)) return;
   if (message?.type !== 'mdv:export') return;
   const urls = Array.isArray(message.images) ? message.images.filter((u) => typeof u === 'string') : [];
-  exportAssets(urls, sender.url.startsWith('file:')).then(sendResponse, (err) =>
+  exportAssets(urls, url.startsWith('file:')).then(sendResponse, (err) =>
     sendResponse({ error: String(err?.message ?? err) }),
   );
   return true;

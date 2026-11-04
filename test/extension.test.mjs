@@ -151,6 +151,39 @@ test('edits on the page', async () => {
   await page.close();
 });
 
+test('shows the original text and goes back to the page', async () => {
+  const { page, errors } = await open('sample.md');
+  const btn = page.locator('#srcBtn');
+  assert.equal(await btn.isVisible(), true);
+  assert.equal(await btn.getAttribute('aria-pressed'), 'false');
+
+  await btn.click();
+  const src = page.locator('#mdvSrc');
+  assert.equal(await src.isVisible(), true);
+  assert.equal(await src.textContent(), (await readFile(join(root, 'test', 'sample.md'), 'utf8')).replace(/\r\n/g, '\n'));
+  assert.equal(await page.locator('#doc').isVisible(), false);
+  assert.equal(await page.locator('.mdv-nav').isVisible(), false);
+  assert.equal(await btn.getAttribute('aria-pressed'), 'true');
+  assert.equal(await btn.getAttribute('title'), 'Show the formatted page');
+
+  await btn.click();
+  assert.equal(await src.count(), 0);
+  assert.equal(await page.locator('#doc').isVisible(), true);
+  assert.equal(await page.locator('.mdv-nav').isVisible(), true);
+
+  // editing starts from the formatted page
+  await btn.click();
+  await page.locator('#editBtn').click();
+  await page.waitForSelector('#ed[contenteditable="true"]');
+  assert.equal(await src.count(), 0);
+  assert.equal(await btn.isVisible(), false);
+  await page.locator('#edDone').click();
+  await page.waitForSelector('#doc h1');
+  assert.equal(await btn.isVisible(), true);
+  assert.deepEqual(errors, []);
+  await page.close();
+});
+
 test('leaves html pages whose address ends in .md alone', async () => {
   const page = await context.newPage();
   await page.goto(`${BASE}/sample.md?html`);
@@ -204,6 +237,50 @@ test('as published: formats local files, leaves websites until allowed', async (
     assert.ok(await welcome.locator('.wl-head img').evaluate((img) => img.decode().then(() => img.naturalWidth > 0)));
     assert.deepEqual(problems, []);
     await welcome.screenshot({ path: join(root, 'test', 'screenshot-welcome.png'), fullPage: true });
+    await welcome.locator('#openReader').click();
+    await welcome.waitForURL(`chrome-extension://${id}/src/reader.html`);
+    await welcome.waitForSelector('#drop');
+  } finally {
+    await published.close();
+  }
+});
+
+test('opens files from its own page, without access to file URLs', async () => {
+  const published = await launchExtension(root);
+  try {
+    const { context: ctx, worker } = published;
+    const id = new URL(worker.url()).host;
+    const page = await ctx.newPage();
+    const problems = [];
+    page.on('console', (m) => m.type() === 'error' && problems.push(m.text()));
+    page.on('pageerror', (e) => problems.push(e.message));
+    await page.goto(`chrome-extension://${id}/src/reader.html`);
+    await page.waitForSelector('#chooseBtn');
+    assert.equal(await page.locator('#home').isVisible(), true);
+    assert.equal(await page.locator('#homeBtn .nm').textContent(), 'Markdown CoolReader');
+    assert.equal(await page.locator('[data-id="home-settings-link"]').getAttribute('href'), `chrome-extension://${id}/src/welcome.html`);
+    assert.equal(await page.evaluate(() => getComputedStyle(document.body).fontFamily.includes('DM Sans')), true);
+
+    await page.locator('#fileIn').setInputFiles([join(root, 'test', 'sample.md'), join(root, 'test', 'logo.svg')]);
+    await page.waitForSelector('#doc h1');
+    assert.equal(await page.locator('#doc h1').first().textContent(), 'Main title');
+    assert.ok((await page.locator('#doc pre code .hljs-keyword').count()) > 0);
+    const img = page.locator('#doc img[alt="Logo"]');
+    assert.match(await img.getAttribute('src'), /^blob:/);
+    await assert.doesNotReject(img.evaluate((el) => el.decode()));
+
+    await page.locator('#srcBtn').click();
+    assert.match(await page.locator('#mdvSrc').textContent(), /^---\r?\ntitle: Example/);
+    await page.locator('#srcBtn').click();
+
+    const [download] = await Promise.all([page.waitForEvent('download'), page.locator('#htmlBtn').click()]);
+    assert.equal(download.suggestedFilename(), 'sample.html');
+    assert.match(await readFile(await download.path(), 'utf8'), /<img src="data:image\/svg\+xml;base64,[^"]+" alt="Logo">/);
+    // The page's CSP reports the sample's onerror= while DOMParser reads it, in an inert draft: nothing runs.
+    assert.equal(await page.evaluate(() => document.body.dataset.xss ?? null), null);
+    assert.equal(await page.locator('#doc [onerror]').count(), 0);
+    assert.deepEqual(problems.filter((p) => !p.startsWith('Executing inline event handler')), []);
+    await page.screenshot({ path: join(root, 'test', 'screenshot-open.png'), fullPage: true });
   } finally {
     await published.close();
   }

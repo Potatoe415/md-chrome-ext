@@ -146,16 +146,63 @@ body.mdv-nav-open .mdv-nav-list {
   border-color: var(--primary);
 }
 
-body.editing .mdv-nav {
+body.editing .mdv-nav,
+body.mdv-src-on .mdv-nav {
   display: none;
 }
 
-body.mdv-nav-on.editing {
+body.mdv-nav-on.editing,
+body.mdv-nav-on.mdv-src-on {
   padding-left: 0;
 }
 
-body.mdv-nav-on.editing .top {
+body.mdv-nav-on.editing .top,
+body.mdv-nav-on.mdv-src-on .top {
   margin-left: 0;
+}
+
+/* Original text: the file's Markdown in place of the formatted page. */
+.wrap.mdv-src-on {
+  display: block;
+}
+
+.wrap.mdv-src-on > :not(.mdv-src) {
+  display: none;
+}
+
+.mdv-src {
+  box-sizing: border-box;
+  max-width: calc(var(--rw) * var(--rs) + 120px);
+  margin: 0 auto;
+  padding: 20px 24px;
+  font: 13.5px/1.65 var(--font-mono);
+  color: var(--text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  tab-size: 4;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+#srcBtn[aria-pressed='true'] {
+  color: var(--primary);
+  background: var(--surface);
+}
+
+/* Drop screen of the extension's own page */
+.mdv-home-foot {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 13.5px;
+}
+
+.mdv-home-foot a {
+  color: var(--text-muted);
+}
+
+.mdv-home-foot a:hover {
+  color: var(--primary);
 }
 
 @media print {

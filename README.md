@@ -12,6 +12,7 @@ A Chrome extension that opens Markdown files formatted for reading, instead of r
 - Search with Ctrl+K, F3 to step through matches
 - Links between `.md` files, Obsidian-style `[[wikilinks]]`, images stored next to the file
 - Edit on the formatted page and save the `.md` (untouched parts are kept byte for byte)
+- Show the original Markdown text, and back to the formatted page, from the toolbar
 - Export to Word (`.docx`), to a self-contained web page (`.html`), or print to PDF
 
 ## Use it
@@ -20,7 +21,9 @@ A Chrome extension that opens Markdown files formatted for reading, instead of r
 2. In `chrome://extensions` › Markdown CoolReader › Details, turn on **Allow access to file URLs**.
 3. Open a `.md` file in Chrome (drag it in, or Ctrl+O).
 
-Optional: from the extension's page (toolbar icon), allow websites to also format `.md` files served as plain text, such as raw files on GitHub.
+Without step 2, the toolbar icon opens the reader on its own page: choose a file or a folder, or drop it there.
+
+Optional: from the settings page (it opens at install, and from the reader's drop screen), allow websites to also format `.md` files served as plain text, such as raw files on GitHub.
 
 ## Privacy
 

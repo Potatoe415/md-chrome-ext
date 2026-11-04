@@ -263,8 +263,110 @@ const mdvNav = (() => {
   });
 })();
 
+// Original text: the file's Markdown (with the changes not saved yet) in place of the formatted page;
+// a second click goes back to the page, at the same place.
+const mdvSource = (() => {
+  const SVG = 'http://www.w3.org/2000/svg';
+  const icon = (size) => {
+    const svg = document.createElementNS(SVG, 'svg');
+    Object.entries({ width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true' })
+      .forEach(([k, v]) => svg.setAttribute(k, v));
+    ['m8 8-4 4 4 4', 'm16 8 4 4-4 4', 'm14 5-4 14'].forEach((d) => {
+      const path = document.createElementNS(SVG, 'path');
+      path.setAttribute('d', d);
+      svg.append(path);
+    });
+    return svg;
+  };
+  const TEXT = { on: 'Show the formatted page', off: 'Show the original text (Markdown)' };
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'tbar-b';
+  btn.id = 'srcBtn';
+  btn.dataset.id = 'md-source-btn';
+  btn.setAttribute('aria-pressed', 'false');
+  btn.append(icon(18));
+  const sep = document.createElement('span');
+  sep.className = 'tbar-sep';
+  sep.setAttribute('aria-hidden', 'true');
+  const grp = document.createElement('span');
+  grp.className = 'mr-grp desk';
+  grp.append(sep, btn);
+  $('editBtn').parentElement.after(grp);
+
+  const item = document.createElement('button');
+  item.type = 'button';
+  item.id = 'mmSource';
+  item.dataset.id = 'md-more-source';
+  const label = document.createElement('span');
+  item.append(icon(17), label);
+  $('mmPrint').after(item);
+
+  const view = document.createElement('pre');
+  view.className = 'mdv-src';
+  view.id = 'mdvSrc';
+  view.dataset.id = 'md-source-view';
+
+  // shown exactly when Print is: a document on screen, not being edited
+  const follow = (el, model) => {
+    const sync = () => { el.hidden = model.hidden; };
+    new MutationObserver(sync).observe(model, { attributes: true, attributeFilter: ['hidden'] });
+    sync();
+  };
+  follow(grp, $('printBtn'));
+  follow(item, $('mmPrint'));
+
+  let on = false;
+  const sync = () => {
+    btn.setAttribute('aria-pressed', String(on));
+    btn.title = on ? TEXT.on : TEXT.off;
+    btn.setAttribute('aria-label', btn.title);
+    label.textContent = on ? 'Formatted page' : 'Original text';
+    document.body.classList.toggle('mdv-src-on', on);
+    $('wrap').classList.toggle('mdv-src-on', on);
+  };
+  sync();
+
+  function set(next) {
+    if (next === on || (next && (!cur || edS || $('wrap').hidden))) return;
+    const h = document.documentElement;
+    const frac = h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight);
+    on = next;
+    if (on) {
+      view.textContent = docs.get(cur).text;
+      $('wrap').append(view);
+    } else {
+      view.remove();
+    }
+    sync();
+    scrollTo({ top: frac * (h.scrollHeight - h.clientHeight), behavior: 'instant' });
+    onScroll();
+  }
+
+  // another file, the drop screen or the editor: back to the formatted page
+  function reset() {
+    if (!on) return;
+    on = false;
+    view.remove();
+    sync();
+  }
+
+  btn.addEventListener('click', () => set(!on));
+  item.addEventListener('click', () => {
+    $('moreMenu').hidden = true;
+    set(!on);
+  });
+  document.addEventListener('click', (e) => {
+    if (on && e.target.closest?.('#editBtn')) set(false);
+  }, true);
+
+  return { reset };
+})();
+
 const mrShowMd = showMd;
 showMd = (path, anchor) => {
+  mdvSource.reset();
   mrShowMd(path, anchor);
   spy?.disconnect();
   spy = null;
@@ -276,6 +378,7 @@ showMd = (path, anchor) => {
 
 const mrGoHome = goHome;
 goHome = () => {
+  mdvSource.reset();
   mrGoHome();
   mdvNav.hide();
 };
@@ -297,7 +400,19 @@ lang = 'en';
 applyStatic();
 applyPrefs();
 
-(async () => {
+// On the extension's own page there is no file in the address: the drop screen shows, with a way to the
+// settings (it cannot be clicked through from a file or a website).
+if (!globalThis.MDV_SOURCE) {
+  const foot = document.createElement('p');
+  foot.className = 'mdv-home-foot';
+  const link = document.createElement('a');
+  link.href = chrome.runtime.getURL('src/welcome.html');
+  link.dataset.id = 'home-settings-link';
+  link.textContent = 'Settings: files on your computer, websites';
+  foot.append(link);
+  $('drop').after(foot);
+  document.documentElement.style.removeProperty('visibility');
+} else (async () => {
   const { text, name, mtime } = globalThis.MDV_SOURCE;
   const url = location.href;
   let anchor = location.hash.slice(1);

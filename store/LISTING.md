@@ -30,12 +30,15 @@ FIND AND NAVIGATE
 EDIT AND EXPORT
 • Edit right on the formatted page, with only what Markdown can write
 • Save the .md with Ctrl+S: whatever you did not touch is kept exactly as it was
+• See the original Markdown text with one click, and go back to the formatted page
 • Export to Word (.docx), to a self-contained web page (.html), or print to PDF
 
 GETTING STARTED
 1. Install the extension. Its welcome page opens.
 2. To read files from your computer, turn on "Allow access to file URLs" in the extension's details. The welcome page takes you there in one click.
 3. Drag a .md file into Chrome, or press Ctrl+O and pick one.
+
+No time for step 2? Click the toolbar icon: the reader opens on its own page, where you choose a file or a folder, or drop it.
 
 Optional: allow websites from the welcome page to also format .md files that sites serve as plain text, such as raw files on GitHub. Regular web pages are never changed.
 

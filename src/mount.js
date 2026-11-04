@@ -3,7 +3,8 @@
 // their top-level code looks up the page's elements.
 (() => {
   const head = document.head ?? document.documentElement.insertBefore(document.createElement('head'), document.body);
-  head.querySelectorAll('style, link[rel="stylesheet"]').forEach((el) => el.remove());
+  // Chrome's own text-page styles go; the reader's, on its extension page, stay.
+  head.querySelectorAll('style:not([data-mdv]), link[rel="stylesheet"]:not([data-mdv])').forEach((el) => el.remove());
 
   const viewport = document.createElement('meta');
   viewport.name = 'viewport';
